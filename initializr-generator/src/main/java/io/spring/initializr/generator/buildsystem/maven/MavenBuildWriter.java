@@ -16,6 +16,7 @@
 
 package io.spring.initializr.generator.buildsystem.maven;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
@@ -57,6 +58,7 @@ public class MavenBuildWriter {
 	 */
 	public void writeTo(IndentingWriter writer, MavenBuild build) {
 		MavenBuildSettings settings = build.getSettings();
+		Scm scm = build.getScm();
 		writeProject(writer, () -> {
 			writeParent(writer, build);
 			writeProjectCoordinates(writer, settings);
@@ -67,6 +69,7 @@ public class MavenBuildWriter {
 			writeDependencyManagement(writer, build);
 			writeBuild(writer, build);
 			writeRepositories(writer, build);
+			writeScm(writer, scm);
 		});
 	}
 
@@ -409,6 +412,30 @@ public class MavenBuildWriter {
 				})));
 	}
 
+	private void writeScm(IndentingWriter writer, Scm scm) {
+		if (!scm.isEmpty()) {
+			List<Pair> attributeList = new ArrayList<>();
+			this.addIfNotNull(attributeList, "child.scm.connection.inherit.append.path",
+					scm.getChildScmConnectionInheritAppendPath());
+			this.addIfNotNull(attributeList, "child.scm.developerConnection.inherit.append.path",
+					scm.getChildScmDeveloperConnectionInheritAppendPath());
+			this.addIfNotNull(attributeList, "child.scm.url.inherit.append.path",
+					scm.getChildScmUrlInheritAppendPath());
+			writeElementWithAttributes(writer, "scm", () -> {
+				writeSingleElement(writer, "connection", scm.getConnection());
+				writeSingleElement(writer, "developerConnection", scm.getDeveloperConnection());
+				writeSingleElement(writer, "tag", scm.getTag());
+				writeSingleElement(writer, "url", scm.getUrl());
+			}, attributeList);
+		}
+	}
+
+	private void addIfNotNull(List<Pair> attributeList, String name, Object value) {
+		if (value != null) {
+			attributeList.add(new Pair(name, value.toString()));
+		}
+	}
+
 	private void writeSingleElement(IndentingWriter writer, String name, String text) {
 		if (text != null) {
 			writer.print(String.format("<%s>", name));
@@ -428,6 +455,41 @@ public class MavenBuildWriter {
 		if (!collection.isEmpty()) {
 			collection.forEach((item) -> itemWriter.accept(writer, item));
 		}
+	}
+
+	private void writeElementWithAttributes(IndentingWriter writer, String name, Runnable withContent,
+			List<Pair> pair) {
+		writer.print(String.format("<%s", name));
+		pair.forEach((p) -> writer.print(String.format(" %s=\"%s\"", p.getKey(), p.getValue())));
+		writer.println(">");
+		writer.indented(withContent);
+		writer.println(String.format("</%s>", name));
+	}
+
+	/**
+	 * Simple key value class.
+	 *
+	 * @author Joachim Pasquali
+	 */
+	private static class Pair {
+
+		private final String key;
+
+		private final String value;
+
+		Pair(String key, String value) {
+			this.key = key;
+			this.value = value;
+		}
+
+		String getKey() {
+			return this.key;
+		}
+
+		String getValue() {
+			return this.value;
+		}
+
 	}
 
 }
