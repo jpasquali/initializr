@@ -16,11 +16,12 @@
 
 package io.spring.initializr.generator.buildsystem.maven;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -414,7 +415,7 @@ public class MavenBuildWriter {
 
 	private void writeScm(IndentingWriter writer, Scm scm) {
 		if (!scm.isEmpty()) {
-			List<Pair> attributeList = new ArrayList<>();
+			Map<String, String> attributeList = new HashMap<>();
 			this.addIfNotNull(attributeList, "child.scm.connection.inherit.append.path",
 					scm.getChildScmConnectionInheritAppendPath());
 			this.addIfNotNull(attributeList, "child.scm.developerConnection.inherit.append.path",
@@ -430,9 +431,9 @@ public class MavenBuildWriter {
 		}
 	}
 
-	private void addIfNotNull(List<Pair> attributeList, String name, Object value) {
+	private void addIfNotNull(Map<String, String> attributeMap, String name, Object value) {
 		if (value != null) {
-			attributeList.add(new Pair(name, value.toString()));
+			attributeMap.put(name, value.toString());
 		}
 	}
 
@@ -458,38 +459,13 @@ public class MavenBuildWriter {
 	}
 
 	private void writeElementWithAttributes(IndentingWriter writer, String name, Runnable withContent,
-			List<Pair> pair) {
+			Map<String, String> attributes) {
 		writer.print(String.format("<%s", name));
-		pair.forEach((p) -> writer.print(String.format(" %s=\"%s\"", p.getKey(), p.getValue())));
+		attributes.entrySet()
+				.forEach((entry) -> writer.print(String.format(" %s=\"%s\"", entry.getKey(), entry.getValue())));
 		writer.println(">");
 		writer.indented(withContent);
 		writer.println(String.format("</%s>", name));
-	}
-
-	/**
-	 * Simple key value class.
-	 *
-	 * @author Joachim Pasquali
-	 */
-	private static class Pair {
-
-		private final String key;
-
-		private final String value;
-
-		Pair(String key, String value) {
-			this.key = key;
-			this.value = value;
-		}
-
-		String getKey() {
-			return this.key;
-		}
-
-		String getValue() {
-			return this.value;
-		}
-
 	}
 
 }
