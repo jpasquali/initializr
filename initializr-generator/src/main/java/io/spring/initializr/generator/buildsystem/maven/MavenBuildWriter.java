@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
@@ -65,6 +66,7 @@ public class MavenBuildWriter {
 	public void writeTo(IndentingWriter writer, MavenBuild build) {
 		MavenBuildSettings settings = build.getSettings();
 		MavenDistributionManagement distributionManagement = build.getDistributionManagement();
+		Scm scm = build.getScm();
 		writeProject(writer, () -> {
 			writeParent(writer, build);
 			writeProjectCoordinates(writer, settings);
@@ -76,6 +78,7 @@ public class MavenBuildWriter {
 			writeBuild(writer, build);
 			writeRepositories(writer, build);
 			writeDistributionManagement(writer, distributionManagement);
+			writeScm(writer, scm);
 		});
 	}
 
@@ -469,6 +472,19 @@ public class MavenBuildWriter {
 				writeSingleElement(writer, "updatePolicy", policy.getUpdatePolicy());
 				writeSingleElement(writer, "checksumPolicy", policy.getChecksumPolicy());
 			});
+	private void writeScm(IndentingWriter writer, Scm scm) {
+		if (!scm.isEmpty()) {
+			Map<String, Object> attributeList = new HashMap<>();
+			attributeList.put("child.scm.connection.inherit.append.path", scm.getChildScmConnectionInheritAppendPath());
+			attributeList.put("child.scm.developerConnection.inherit.append.path",
+					scm.getChildScmDeveloperConnectionInheritAppendPath());
+			attributeList.put("child.scm.url.inherit.append.path", scm.getChildScmUrlInheritAppendPath());
+			writeElementWithAttributes(writer, "scm", () -> {
+				writeSingleElement(writer, "connection", scm.getConnection());
+				writeSingleElement(writer, "developerConnection", scm.getDeveloperConnection());
+				writeSingleElement(writer, "tag", scm.getTag());
+				writeSingleElement(writer, "url", scm.getUrl());
+			}, attributeList);
 		}
 	}
 

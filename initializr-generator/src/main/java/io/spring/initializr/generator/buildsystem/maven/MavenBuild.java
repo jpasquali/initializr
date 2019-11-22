@@ -38,6 +38,8 @@ public class MavenBuild extends Build {
 	private final MavenPluginContainer plugins = new MavenPluginContainer();
 
 	private final MavenDistributionManagement.Builder distributionManagement = new MavenDistributionManagement.Builder();
+	
+	private final Scm.Builder scm = new Scm.Builder();
 
 	public MavenBuild(BuildItemResolver buildItemResolver) {
 		super(buildItemResolver);
@@ -45,6 +47,14 @@ public class MavenBuild extends Build {
 
 	public MavenBuild() {
 		this(null);
+	}
+
+	public Scm.Builder scm() {
+		return this.scm;
+	}
+
+	public Scm getScm() {
+		return this.scm.build();
 	}
 
 	@Override
