@@ -475,6 +475,9 @@ public class MavenBuildWriter {
 				writeSingleElement(writer, "updatePolicy", policy.getUpdatePolicy());
 				writeSingleElement(writer, "checksumPolicy", policy.getChecksumPolicy());
 			});
+		}
+	}
+
 	private void writeScm(IndentingWriter writer, Scm scm) {
 		if (!scm.isEmpty()) {
 			Map<String, Object> attributeList = new HashMap<>();
