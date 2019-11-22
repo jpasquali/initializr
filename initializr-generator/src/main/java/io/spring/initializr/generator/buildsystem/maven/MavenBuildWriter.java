@@ -415,25 +415,17 @@ public class MavenBuildWriter {
 
 	private void writeScm(IndentingWriter writer, Scm scm) {
 		if (!scm.isEmpty()) {
-			Map<String, String> attributeList = new HashMap<>();
-			this.addIfNotNull(attributeList, "child.scm.connection.inherit.append.path",
-					scm.getChildScmConnectionInheritAppendPath());
-			this.addIfNotNull(attributeList, "child.scm.developerConnection.inherit.append.path",
+			Map<String, Object> attributeList = new HashMap<>();
+			attributeList.put("child.scm.connection.inherit.append.path", scm.getChildScmConnectionInheritAppendPath());
+			attributeList.put("child.scm.developerConnection.inherit.append.path",
 					scm.getChildScmDeveloperConnectionInheritAppendPath());
-			this.addIfNotNull(attributeList, "child.scm.url.inherit.append.path",
-					scm.getChildScmUrlInheritAppendPath());
+			attributeList.put("child.scm.url.inherit.append.path", scm.getChildScmUrlInheritAppendPath());
 			writeElementWithAttributes(writer, "scm", () -> {
 				writeSingleElement(writer, "connection", scm.getConnection());
 				writeSingleElement(writer, "developerConnection", scm.getDeveloperConnection());
 				writeSingleElement(writer, "tag", scm.getTag());
 				writeSingleElement(writer, "url", scm.getUrl());
 			}, attributeList);
-		}
-	}
-
-	private void addIfNotNull(Map<String, String> attributeMap, String name, Object value) {
-		if (value != null) {
-			attributeMap.put(name, value.toString());
 		}
 	}
 
@@ -459,10 +451,10 @@ public class MavenBuildWriter {
 	}
 
 	private void writeElementWithAttributes(IndentingWriter writer, String name, Runnable withContent,
-			Map<String, String> attributes) {
+			Map<String, Object> attributeMap) {
 		writer.print(String.format("<%s", name));
-		attributes.entrySet()
-				.forEach((entry) -> writer.print(String.format(" %s=\"%s\"", entry.getKey(), entry.getValue())));
+		attributeMap.entrySet().stream().filter((entry) -> entry.getValue() != null).forEach(
+				(entry) -> writer.print(String.format(" %s=\"%s\"", entry.getKey(), entry.getValue().toString())));
 		writer.println(">");
 		writer.indented(withContent);
 		writer.println(String.format("</%s>", name));
